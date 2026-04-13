@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// --- 1. AUTENTIKASI (NextAuth.js Models) ---
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
+  // Relasi ke progres belajar user
+  enrolledRoadmaps UserProgress[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// --- 2. KONTEN (Roadmap & Materials) ---
+model Roadmap {
+  id          String  @id @default(cuid())
+  title       String
+  slug        String  @unique
+  description String  @db.VarChar(1000)
+  category    String // Misal: Ekonomi, Teknologi, Matematika
+  thumbnail   String?
+  difficulty  String  @default("Beginner") // Beginner, Intermediate, Advanced
+
+  steps     Step[]
+  students  UserProgress[] // User yang mengikuti roadmap ini
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model Step {
+  id          String  @id @default(cuid())
+  order       Int // Urutan langkah: 1, 2, 3...
+  title       String
+  description String? @db.VarChar(500)
+  roadmapId   String
+  roadmap     Roadmap @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+
+  resources Resource[]
+}
+
+model Resource {
+  id       String       @id @default(cuid())
+  title    String
+  url      String       @db.VarChar(500)
+  type     ResourceType @default(VIDEO)
+  provider String // Misal: YouTube, MDN, Medium
+  stepId   String
+  step     Step         @relation(fields: [stepId], references: [id], onDelete: Cascade)
+}
+
+enum ResourceType {
+  VIDEO
+  ARTICLE
+  EBOOK
+  QUIZ
+}
+
+// --- 3. TRACKING (Progres Belajar) ---
+model UserProgress {
+  userId      String
+  roadmapId   String
+  currentStep Int      @default(1) // Menyimpan progres langkah terakhir
+  isCompleted Boolean  @default(false)
+  lastAccess  DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  roadmap Roadmap @relation(fields: [roadmapId], references: [id])
+
+  @@id([userId, roadmapId])
+}
