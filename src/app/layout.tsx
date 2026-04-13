@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Geist, Geist_Mono, Public_Sans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import Provider from "@/components/providers/session-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider"; // Pastikan file ini sudah dibuat
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans"
+// --- FONT OPTIMIZATION ---
+const publicSans = Public_Sans({
+  subsets: ['latin'],
+  variable: '--font-sans'
 });
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const geistHeading = Geist({
+  subsets: ['latin'],
+  variable: '--font-heading'
 });
 
 const geistMono = Geist_Mono({
@@ -19,7 +21,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// --- SEO & METADATA OPTIMIZATION ---
+// --- SEO & METADATA ---
 export const metadata: Metadata = {
   title: {
     default: "Lentera - Navigasi Belajar Terstruktur",
@@ -31,7 +33,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Lentera - Navigasi Belajar Terstruktur",
     description: "Temukan jalan belajarmu dengan materi terbaik yang sudah dikurasi.",
-    url: "https://lentera-platform.vercel.app", // Ganti sesuai domain nanti
+    url: "https://lentera-platform.vercel.app",
     siteName: "Lentera",
     locale: "id_ID",
     type: "website",
@@ -41,9 +43,6 @@ export const metadata: Metadata = {
     title: "Lentera",
     description: "Navigasi belajar terstruktur untuk semua.",
   },
-  icons: {
-    icon: "/favicon.ico", // Pastikan file ini ada di folder /public
-  }
 };
 
 export default function RootLayout({
@@ -53,23 +52,36 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="id" // Ubah ke "id" jika target utamanya Indonesia
+      lang="id"
+      // suppressHydrationWarning wajib ada untuk library tema
+      suppressHydrationWarning
       className={cn(
         "h-full antialiased",
-        geistSans.variable,
-        geistMono.variable,
-        inter.variable
+        publicSans.variable,
+        geistHeading.variable,
+        geistMono.variable
       )}
-      suppressHydrationWarning // Menghindari mismatch error pada dark mode/extension browser
     >
       <body className={cn(
-        "min-h-full flex flex-col font-sans bg-background text-foreground",
-        inter.className
+        "min-h-screen bg-background text-foreground font-sans selection:bg-primary/20",
+        publicSans.className
       )}>
-        {/* AuthProvider membungkus seluruh aplikasi agar session bisa diakses di mana saja */}
-        <Provider>
-          {children}
-        </Provider>
+        {/* Force dark mode via ThemeProvider */}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          <Provider>
+            {/* Wrapper utama agar konten tidak terlalu mentok layar tapi background tetap full */}
+            <main className="relative flex min-h-screen flex-col items-center">
+              <div className="w-full max-w-7xl px-4 md:px-6">
+                {children}
+              </div>
+            </main>
+          </Provider>
+        </ThemeProvider>
       </body>
     </html>
   );

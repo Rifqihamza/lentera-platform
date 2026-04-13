@@ -15,8 +15,8 @@ export default async function Navbar() {
     const session = await auth();
 
     return (
-        <nav className="border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 sticky top-0 z-50">
-            <div className="w-full flex h-16 items-center justify-between px-10 py-4">
+        <nav className="fixed top-5 left-1/2 w-full max-w-7xl mx-auto -translate-x-1/2 z-50">
+            <div className="w-full flex h-14 items-center justify-between p-4 bg-foreground/10 rounded-xl">
                 {/* Logo + Navigation */}
                 <div className="flex items-center gap-6 md:gap-10">
                     <Link
@@ -27,12 +27,21 @@ export default async function Navbar() {
                     </Link>
 
                     <div className="hidden md:flex gap-6 text-sm font-medium">
-                        <Link href="/explore" className="transition-colors hover:text-primary">
-                            Jelajah
+                        <Link href="/" className="transition-colors hover:text-primary">
+                            Home
                         </Link>
-                        <Link href="/dashboard" className="transition-colors hover:text-primary">
-                            Dashboard
+                        <Link href="#about" className="transition-colors hover:text-primary">
+                            About
                         </Link>
+                        {session ? (
+                            <Link href="/dashboard" className="transition-colors hover:text-primary">
+                                Dashboard
+                            </Link>
+                        ) : (
+                            <Link href="/" className="transition-colors hover:text-primary">
+                                Explore
+                            </Link>
+                        )}
                     </div>
                 </div>
 

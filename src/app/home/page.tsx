@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import Navbar from "@/components/shared/navbar"
-export default async function Home() {
+export default async function HomePage() {
     return (
         <>
             <Navbar />
